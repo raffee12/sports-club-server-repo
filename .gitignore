@@ -1,0 +1,44 @@
+# Node modules
+node_modules/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Firebase private keys and configs
+firebase-service-account.json
+*.key.json
+convertKey.js
+# Build output
+dist/
+build/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Vercel deployment folder
+.vercel/
+vercel.json
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Coverage reports
+coverage/
+
+# Temporary or test files
+*.tmp
+*.temp
+
+# TypeScript or Babel artifacts
+*.tsbuildinfo
+*.babelrc
+
+# Local DB/dev files
+*.sqlite
+*.db
+dump.sql
