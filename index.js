@@ -462,7 +462,7 @@ app.delete("/announcements/:id", verifyToken, verifyAdmin, async (req, res) => {
   res.send(result);
 });
 
-// === COURTS ===
+
 app.get("/courts", async (req, res) => {
   await initDB();
   const courts = await courtsCol.find().toArray();
@@ -489,7 +489,7 @@ app.get("/courts/count", verifyToken, verifyAdmin, async (req, res) => {
   res.send({ count });
 });
 
-// === DEFAULT ===
+
 app.get("/", (req, res) => {
   res.send({ message: "Vercel server running without /api prefix" });
 });
@@ -500,3 +500,4 @@ app.get("/test", (req, res) => {
 
 module.exports = app;
 module.exports.handler = serverless(app);
+console.log("Guu")
