@@ -498,4 +498,3 @@ app.get("/test", (req, res) => {
 
 module.exports = app;
 module.exports.handler = serverless(app);
-console.log("blog routing adding");
