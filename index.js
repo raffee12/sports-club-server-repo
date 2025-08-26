@@ -487,6 +487,103 @@ app.get("/courts/count", verifyToken, verifyAdmin, async (req, res) => {
   const count = await courtsCol.estimatedDocumentCount();
   res.send({ count });
 });
+// === Admin Stats ===
+app.get("/dashboard/stats", verifyToken, verifyAdmin, async (req, res) => {
+  await initDB();
+  try {
+    const totalUsers = await usersCol.estimatedDocumentCount();
+    const totalMembers = await membersCol.estimatedDocumentCount();
+    const payments = await paymentsCol.find().toArray();
+    const totalRevenue = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+
+    const bookings = await bookingsCol.find().toArray();
+    const bookingsByStatus = bookings.reduce((acc, b) => {
+      const status = b.status || "pending";
+      const found = acc.find((x) => x.status === status);
+      if (found) found.count++;
+      else acc.push({ status, count: 1 });
+      return acc;
+    }, []);
+
+    const mostBookedCourts = await bookingsCol
+      .aggregate([
+        { $group: { _id: "$courtName", count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+      ])
+      .toArray();
+
+    res.send({
+      totalUsers,
+      totalMembers,
+      totalRevenue,
+      bookingsByStatus,
+      mostBookedCourts,
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// === User Stats ===
+// app.get("/dashboard/user-stats", verifyToken, async (req, res) => {
+//   await initDB();
+//   try {
+//     const email = req.user.email;
+
+//     const userBookings = await bookingsCol.find({ email }).toArray();
+//     const userPayments = await paymentsCol.find({ email }).toArray();
+
+//     const totalBookings = userBookings.length;
+//     const totalPaid = userPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
+
+//     const bookingsByStatus = userBookings.reduce((acc, b) => {
+//       const status = b.status || "pending";
+//       const found = acc.find((x) => x.status === status);
+//       if (found) found.count++;
+//       else acc.push({ status, count: 1 });
+//       return acc;
+//     }, []);
+
+//     res.send({
+//       totalBookings,
+//       totalPaid,
+//       bookingsByStatus,
+//     });
+//   } catch (err) {
+//     res.status(500).json({ message: "Internal server error" });
+//   }
+// });
+// === User Stats ===
+app.get("/dashboard/user-stats", verifyToken, async (req, res) => {
+  await initDB();
+  try {
+    const email = req.user.email;
+
+    // Use 'userEmail' instead of 'email'
+    const userBookings = await bookingsCol.find({ userEmail: email }).toArray();
+    const userPayments = await paymentsCol.find({ userEmail: email }).toArray();
+
+    const totalBookings = userBookings.length;
+    const totalPaid = userPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
+
+    const bookingsByStatus = userBookings.reduce((acc, b) => {
+      const status = b.status || "pending";
+      const found = acc.find((x) => x.status === status);
+      if (found) found.count++;
+      else acc.push({ status, count: 1 });
+      return acc;
+    }, []);
+
+    res.send({
+      totalBookings,
+      totalPaid,
+      bookingsByStatus,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
 
 app.get("/", (req, res) => {
   res.send({ message: "Vercel server running without /api prefix" });
